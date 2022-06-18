@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<title>Home</title>
+
+
+
+<style type="text/css">
+	body {
+	background: #E5DDD5 url("https://www.toptal.com/designers/subtlepatterns/patterns/sports.png") fixed;
+}
+.page-header {
+	background: #006A4E;
+	margin: 0;
+  padding: 20px 0 10px;
+	color: #FFFFFF;
+	position: fixed;
+	width: 100%;
+  z-index: 1
+}
+.main {
+	height: 100vh;
+	padding-top: 70px;
+}
+
+.chat-log {
+	padding: 40px 0 114px;
+	height: auto;
+	overflow: auto;
+}
+.chat-log__item {
+	background: #fafafa;
+	padding: 10px;
+	margin: 0 auto 20px;
+	max-width: 80%;
+	float: left;
+	border-radius: 4px;
+	box-shadow: 0 1px 2px rgba(0,0,0,.1);
+	clear: both;
+}
+
+.chat-log__item.chat-log__item--own {
+	float: right;
+	background: #DCF8C6;
+	text-align: right;
+}
+
+.chat-form {
+	background: #DDDDDD;
+	padding: 40px 0;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+}
+
+.chat-log__author {
+	margin: 0 auto .5em;
+	font-size: 14px;
+	font-weight: bold;
+}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg .d-print navbar-light bg-success">
+
+	<a class="navbar-brand">ChatApp</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-control="navbarSupportedContent"  aria-expaned="false" aria-label="Toggle Navigation"><span class="navbar-toggler-icon"></span></button>
+	<div class="collapse navbar-collapse " id="navbarSupportedContent">
+	<form class="form-inline mt-2 mt-lg-0">
+		<input type="search" id="get_message" name="get_message"  class="form-control mr-sm-2" placeholder="Search" aria-label="search">
+
+		<button type="submit"  class="btn btn-outline-warning mt-2 mt-sm-0">Search</button>
+
+
+	</form>
+</div>
+</nav>
+
+	<div id="display" style="margin-top: 20px;">
+
+	</div>
+
+
+
+<script>
+$(document).ready(function(){
+
+setInterval(function(){
+    $.ajax({
+        type: 'GET',
+        url : "/getMessages/{{room}}/",
+        success: function(response){
+            console.log(response);
+            $("#display").empty();
+            for (var key in response.messages)
+            {
+                var temp="<div class='container darker'><b>"+response.messages[key].user+"</b><p>"+response.messages[key].value+"</p><span class='time-left'>"+response.messages[key].date+"</span></div>";
+                $("#display").append(temp);
+            }
+        },
+        error: function(response){
+            alert('An error occured')
+        }
+    });
+},1000);
+})
+</script>
+
+
+
+
+<div class="main">
+  <div class="container ">
+<form id="post-form">
+	{% csrf_token %}
+    <div class="chat-log">
+      <div class="chat-log__item">
+        <h3 class="chat-log__author"><input type="hidden" name="username" id="username" value="{{username}}"></h3>
+        <div class="chat-log__message"><input type="hidden" name="username" id="username" value="{{username}}"></div>
+      </div>
+      <div class="chat-log__item chat-log__item--own">
+       
+        <div class="chat-log__message"><input type="hidden" name="room_id" id="room_id" value="{{room_details.id}}"></div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-form">
+      
+        <div class="row">
+          <div class="col-sm-10 col-xs-8">
+            <input type="text" class="form-control" 
+            id="message" name="message" placeholder="Type Any Message" />
+          </div>
+          <div class="col-sm-2 col-xs-4">
+            <input type="submit" class="btn btn-success btn-block" value="Send">
+          </div>
+        </div>
+    </div>
+</form>
+  </div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+  $(document).on('submit','#post-form',function(e){
+    e.preventDefault();
+
+    $.ajax({
+      type:'POST',
+      url:'/send',
+      data:{
+          username:$('#username').val(),
+          room_id:$('#room_id').val(),
+          message:$('#message').val(),
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+      },
+      success: function(data){
+         //alert(data)
+      }
+    });
+    document.getElementById('message').value = ''
+  });
+</script>
+
+</html>
